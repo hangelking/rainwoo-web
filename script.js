@@ -287,7 +287,7 @@ function setLanguage(lang) {
 }
 
 function featuredCases() {
-  return [cases[5], cases[8], cases[2], cases[1], cases[6]];
+  return [cases[3], cases[2], cases[8], cases[4], cases[1]];
 }
 
 function renderCarousel() {

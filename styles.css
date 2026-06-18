@@ -284,28 +284,25 @@ img {
   left: var(--pad);
   z-index: 5;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 22px;
-  align-items: center;
+  gap: 18px;
   pointer-events: none;
 }
 
 .showcase-controls {
-  display: flex;
-  justify-self: end;
-  align-items: center;
-  gap: 14px;
+  display: contents;
   pointer-events: auto;
 }
 
 .carousel-bars {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: center;
-  gap: 8px;
+  width: 100%;
+  gap: 0;
 }
 
 .carousel-bars button {
-  width: clamp(28px, 4vw, 58px);
+  width: 100%;
   height: 2px;
   padding: 0;
   border: 0;
@@ -314,29 +311,44 @@ img {
 }
 
 .carousel-bars button.is-active {
-  background: var(--gold-strong);
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .carousel-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 6;
   display: grid;
-  width: clamp(34px, 3vw, 44px);
-  height: clamp(34px, 3vw, 44px);
+  width: clamp(44px, 4.2vw, 72px);
+  height: clamp(44px, 4.2vw, 72px);
   place-items: center;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(0, 0, 0, 0.28);
-  color: var(--gold-strong);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  color: rgba(255, 255, 255, 0.64);
   cursor: pointer;
-  font-size: clamp(16px, 1.4vw, 22px);
+  font-size: clamp(22px, 2.5vw, 38px);
   font-weight: 200;
   line-height: 1;
-  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+  backdrop-filter: blur(8px);
+  transform: translateY(-50%);
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.carousel-arrow[data-carousel-prev] {
+  left: clamp(16px, 2.6vw, 42px);
+}
+
+.carousel-arrow[data-carousel-next] {
+  right: clamp(16px, 2.6vw, 42px);
 }
 
 .carousel-arrow:hover {
-  border-color: var(--gold-strong);
-  background: rgba(171, 132, 80, 0.16);
-  transform: translateY(-1px);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.68);
+  background: rgba(0, 0, 0, 0.34);
+  transform: translateY(-50%) scale(1.04);
 }
 
 .showcase-meta {
@@ -779,13 +791,8 @@ h2 {
     right: var(--pad);
   }
 
-  .showcase-ui,
   .works-intro h1 {
     grid-template-columns: 1fr;
-  }
-
-  .showcase-controls {
-    justify-self: start;
   }
 
   .case-grid {
