@@ -660,11 +660,6 @@ function setLanguage(lang) {
 function featuredCases() {
   return [
     {
-      image: "assets/banners/01.jpg",
-      zh: { name: "百年同昌" },
-      en: { name: "Century Tongchang" }
-    },
-    {
       image: "assets/banners/02.jpg",
       zh: { name: "冰岛昔归" },
       en: { name: "Bingdao Xigui" }
