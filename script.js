@@ -43,7 +43,7 @@ const translations = {
     contactEyebrow: "Contact",
     contactTitle: "让产品价值，被更准确地看见。",
     openCase: "查看项目",
-    closeCase: "收起项目",
+    closeCase: "返回",
     galleryLabel: "项目图集",
     legalNotice: "以上案例均为设计效果展示，不作为实际产品对比依据；未经授权，禁止转载、截取、复制或以任何形式传播。"
   },
@@ -81,7 +81,7 @@ const translations = {
     contactEyebrow: "Contact",
     contactTitle: "Make product value visible with precision.",
     openCase: "View Project",
-    closeCase: "Close Project",
+    closeCase: "Back",
     galleryLabel: "Project Gallery",
     legalNotice: "The cases above are design visuals only and are not intended for product comparison. Reposting, screenshots, copying or redistribution is prohibited without permission."
   }
@@ -659,12 +659,32 @@ function setLanguage(lang) {
 
 function featuredCases() {
   return [
-    "yunnan-zhongcha-black-gold-banzhang",
-    "zhongcha-amber-gold-needle-bud",
-    "zhongcha-weisuan",
-    "century-tongchang-nature",
-    "haoke-zhongcha-bingdao-xigui"
-  ].map((slug) => cases.find((item) => item.slug === slug)).filter(Boolean);
+    {
+      image: "assets/banners/01.jpg",
+      zh: { name: "百年同昌" },
+      en: { name: "Century Tongchang" }
+    },
+    {
+      image: "assets/banners/02.jpg",
+      zh: { name: "冰岛昔归" },
+      en: { name: "Bingdao Xigui" }
+    },
+    {
+      image: "assets/banners/03.jpg",
+      zh: { name: "凤羽琥珀 / 薄荷糖" },
+      en: { name: "Phoenix Feather Amber / Mint Candy" }
+    },
+    {
+      image: "assets/banners/04.jpg",
+      zh: { name: "老班章 / 金票 / 七子饼" },
+      en: { name: "Lao Banzhang / Gold Ticket / Qizi Cake" }
+    },
+    {
+      image: "assets/banners/05.jpg",
+      zh: { name: "藏龙 / 宫廷普洱 / 金中茶 / 琥珀" },
+      en: { name: "Canglong / Palace Puer / Gold China Tea / Amber" }
+    }
+  ];
 }
 
 function updateCarouselState() {
@@ -672,7 +692,7 @@ function updateCarouselState() {
   if (!items.length) return;
   activeSlide = (activeSlide + items.length) % items.length;
 
-  carousel.querySelectorAll("[data-carousel-case]").forEach((button, index) => {
+  carousel.querySelectorAll("[data-carousel-slide]").forEach((button, index) => {
     const isActive = index === activeSlide;
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-hidden", String(!isActive));
@@ -698,9 +718,9 @@ function renderCarousel() {
   carousel.innerHTML = items.map((item, index) => {
     const content = item[currentLang];
     return `
-      <button class="showcase-slide" type="button" data-carousel-case="${item.slug}" aria-label="${translations[currentLang].openCase}: ${content.name}">
-        <img src="${originalImagePath(item, item.images[0])}" alt="${content.name}" loading="${index === 0 ? "eager" : "lazy"}" draggable="false" />
-      </button>
+      <div class="showcase-slide" data-carousel-slide aria-label="${content.name}">
+        <img src="${item.image}" alt="${content.name}" loading="${index === 0 ? "eager" : "lazy"}" draggable="false" />
+      </div>
     `;
   }).join("");
 
@@ -782,6 +802,7 @@ function renderCaseDetail() {
       <p class="eyebrow">${content.type} / ${item.year}</p>
       <h2>${content.title}</h2>
       <p>${content.desc}</p>
+      <button class="detail-back" type="button" data-close-case>${translations[currentLang].closeCase}</button>
     </div>
     <div class="detail-carousel" aria-label="${translations[currentLang].galleryLabel}">
       ${item.images.map((image, index) => `
@@ -814,6 +835,38 @@ function startDetailCarousel() {
   detailTimer = setInterval(() => setDetailSlide(activeDetailSlide + 1), 4600);
 }
 
+function setupSwipeNavigation(target, onPrevious, onNext, scopeSelector) {
+  let startX = 0;
+  let startY = 0;
+  let tracking = false;
+  const minDistance = 48;
+
+  target.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (scopeSelector && !event.target.closest(scopeSelector)) return;
+    startX = event.clientX;
+    startY = event.clientY;
+    tracking = true;
+  });
+
+  target.addEventListener("pointerup", (event) => {
+    if (!tracking) return;
+    tracking = false;
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    if (Math.abs(deltaX) < minDistance || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+    if (deltaX > 0) {
+      onPrevious();
+    } else {
+      onNext();
+    }
+  });
+
+  target.addEventListener("pointercancel", () => {
+    tracking = false;
+  });
+}
+
 function openCase(slug) {
   if (!visibleCaseBySlug(slug)) return;
   activeCase = slug;
@@ -822,6 +875,46 @@ function openCase(slug) {
   renderCaseDetail();
   startDetailCarousel();
   caseDetail.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function closeCaseDetail() {
+  activeCase = null;
+  activeDetailSlide = 0;
+  clearInterval(detailTimer);
+  renderCases();
+  renderCaseDetail();
+  document.querySelector("#works")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function setupDetailReturnSwipe() {
+  let startX = 0;
+  let startY = 0;
+  let tracking = false;
+  const minDistance = 56;
+  const mobileQuery = window.matchMedia("(max-width: 720px)");
+
+  document.addEventListener("pointerdown", (event) => {
+    if (!activeCase || !mobileQuery.matches) return;
+    if (!caseDetail.contains(event.target)) return;
+    if (event.target.closest(".detail-carousel, .detail-controls, button, a")) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    startX = event.clientX;
+    startY = event.clientY;
+    tracking = true;
+  });
+
+  document.addEventListener("pointerup", (event) => {
+    if (!tracking) return;
+    tracking = false;
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    if (Math.abs(deltaX) < minDistance || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+    closeCaseDetail();
+  });
+
+  document.addEventListener("pointercancel", () => {
+    tracking = false;
+  });
 }
 
 function setupReveal() {
@@ -885,12 +978,6 @@ caseGrid?.addEventListener("click", (event) => {
   openCase(button.dataset.case);
 });
 
-carousel?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-carousel-case]");
-  if (!button) return;
-  openCase(button.dataset.carouselCase);
-});
-
 carouselDots?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-slide]");
   if (!button) return;
@@ -908,7 +995,24 @@ document.querySelector("[data-carousel-next]")?.addEventListener("click", () => 
   startCarousel();
 });
 
+setupSwipeNavigation(
+  carousel,
+  () => {
+    setSlide(activeSlide - 1);
+    startCarousel();
+  },
+  () => {
+    setSlide(activeSlide + 1);
+    startCarousel();
+  }
+);
+
 caseDetail?.addEventListener("click", (event) => {
+  if (event.target.closest("[data-close-case]")) {
+    closeCaseDetail();
+    return;
+  }
+
   if (event.target.closest("[data-detail-prev]")) {
     setDetailSlide(activeDetailSlide - 1);
     startDetailCarousel();
@@ -920,6 +1024,19 @@ caseDetail?.addEventListener("click", (event) => {
   }
 });
 
+setupSwipeNavigation(
+  caseDetail,
+  () => {
+    setDetailSlide(activeDetailSlide - 1);
+    startDetailCarousel();
+  },
+  () => {
+    setDetailSlide(activeDetailSlide + 1);
+    startDetailCarousel();
+  },
+  ".detail-carousel"
+);
+
 languageButtons.forEach((button) => {
   button.addEventListener("click", () => setLanguage(button.dataset.langBtn));
 });
@@ -927,4 +1044,5 @@ languageButtons.forEach((button) => {
 setLanguage(currentLang);
 setupReveal();
 protectContent();
+setupDetailReturnSwipe();
 startCarousel();

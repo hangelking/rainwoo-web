@@ -205,6 +205,11 @@ img {
   inset: 0;
 }
 
+.showcase-track,
+.detail-carousel {
+  touch-action: pan-y;
+}
+
 .showcase-slide {
   display: grid;
   place-items: center;
@@ -213,7 +218,7 @@ img {
   border: 0;
   background: #000;
   color: var(--ink);
-  cursor: pointer;
+  cursor: default;
   opacity: 0;
   pointer-events: none;
   text-align: left;
@@ -513,6 +518,7 @@ h2 {
   grid-template-columns: minmax(260px, 0.3fr) minmax(0, 0.7fr);
   gap: clamp(28px, 5vw, 76px);
   border-bottom: 1px solid var(--soft-line);
+  touch-action: pan-y;
 }
 
 .case-detail.is-empty {
@@ -525,12 +531,32 @@ h2 {
   align-self: start;
 }
 
-.detail-copy p:last-child {
+.detail-copy > p:not(.eyebrow) {
   margin-top: 24px;
   color: var(--muted);
   font-size: clamp(15px, 1.25vw, 18px);
   font-weight: 200;
   line-height: 1.9;
+}
+
+.detail-back {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 28px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--gold-strong);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.detail-back:hover {
+  border-color: var(--gold-strong);
 }
 
 .detail-carousel {
