@@ -949,8 +949,6 @@ function setupDetailReturnSwipe() {
 
   document.addEventListener("pointerdown", (event) => {
     if (!activeCase || !mobileQuery.matches) return;
-    if (!caseDetail.contains(event.target)) return;
-    if (event.target.closest(".detail-carousel, .detail-controls, button, a")) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     startX = event.clientX;
     startY = event.clientY;
@@ -1081,10 +1079,12 @@ caseDetail?.addEventListener("click", (event) => {
 setupSwipeNavigation(
   caseDetail,
   () => {
+    if (window.matchMedia("(max-width: 720px)").matches) return;
     setDetailSlide(activeDetailSlide - 1);
     startDetailCarousel();
   },
   () => {
+    if (window.matchMedia("(max-width: 720px)").matches) return;
     setDetailSlide(activeDetailSlide + 1);
     startDetailCarousel();
   },
