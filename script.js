@@ -624,6 +624,7 @@ let activeCase = null;
 let activeSlide = 0;
 let activeDetailSlide = 0;
 let carouselTimer;
+let carouselStartToken = 0;
 let detailTimer;
 
 function caseImagePath(item, image) {
@@ -666,8 +667,8 @@ function featuredCases() {
     },
     {
       image: "assets/banners/03.jpg",
-      zh: { name: "凤羽琥珀 / 薄荷糖" },
-      en: { name: "Phoenix Feather Amber / Mint Candy" }
+      zh: { name: "琥珀/凤羽×琥珀" },
+      en: { name: "Amber / Fengyu x Amber" }
     },
     {
       image: "assets/banners/04.jpg",
@@ -680,6 +681,46 @@ function featuredCases() {
       en: { name: "Canglong / Palace Puer / Gold China Tea / Amber" }
     }
   ];
+}
+
+const carouselImageCache = new Map();
+
+function warmCarouselImage(src, priority = "low") {
+  if (carouselImageCache.has(src)) {
+    return carouselImageCache.get(src).ready;
+  }
+
+  const image = new Image();
+  image.decoding = "async";
+  image.loading = "eager";
+
+  if ("fetchPriority" in image) {
+    image.fetchPriority = priority;
+  }
+
+  const ready = new Promise((resolve) => {
+    const settle = () => {
+      if (typeof image.decode === "function") {
+        image.decode().then(resolve).catch(resolve);
+        return;
+      }
+
+      resolve();
+    };
+
+    image.addEventListener("load", settle, { once: true });
+    image.addEventListener("error", resolve, { once: true });
+  });
+
+  carouselImageCache.set(src, { image, ready });
+  image.src = src;
+  return ready;
+}
+
+function preloadCarouselImages(items) {
+  return Promise.all(items.map((item, index) => (
+    warmCarouselImage(item.image, index === 0 ? "high" : "low")
+  )));
 }
 
 function updateCarouselState() {
@@ -710,11 +751,14 @@ function updateCarouselState() {
 
 function renderCarousel() {
   const items = featuredCases();
+  preloadCarouselImages(items);
+  carouselDots.style.setProperty("--slide-count", items.length);
+
   carousel.innerHTML = items.map((item, index) => {
     const content = item[currentLang];
     return `
       <div class="showcase-slide" data-carousel-slide aria-label="${content.name}">
-        <img src="${item.image}" alt="${content.name}" loading="${index === 0 ? "eager" : "lazy"}" draggable="false" />
+        <img src="${item.image}" alt="${content.name}" loading="eager" decoding="async" fetchpriority="${index === 0 ? "high" : "low"}" draggable="false" />
       </div>
     `;
   }).join("");
@@ -733,8 +777,23 @@ function setSlide(index) {
 }
 
 function startCarousel() {
-  clearInterval(carouselTimer);
-  carouselTimer = setInterval(() => setSlide(activeSlide + 1), 4200);
+  clearTimeout(carouselTimer);
+  const token = ++carouselStartToken;
+  const items = featuredCases();
+
+  preloadCarouselImages(items).finally(() => {
+    if (token !== carouselStartToken) return;
+
+    const tick = () => {
+      if (!document.hidden) {
+        requestAnimationFrame(() => setSlide(activeSlide + 1));
+      }
+
+      carouselTimer = setTimeout(tick, 4600);
+    };
+
+    carouselTimer = setTimeout(tick, 4600);
+  });
 }
 
 function renderCases() {
@@ -1034,6 +1093,15 @@ setupSwipeNavigation(
 
 languageButtons.forEach((button) => {
   button.addEventListener("click", () => setLanguage(button.dataset.langBtn));
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    clearTimeout(carouselTimer);
+    return;
+  }
+
+  startCarousel();
 });
 
 setLanguage(currentLang);
