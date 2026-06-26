@@ -208,7 +208,7 @@ img {
 }
 
 .showcase-track,
-.detail-carousel {
+.detail-gallery {
   touch-action: pan-y;
 }
 
@@ -220,7 +220,7 @@ img {
   border: 0;
   background: #000;
   color: var(--ink);
-  cursor: default;
+  cursor: pointer;
   opacity: 0;
   pointer-events: none;
   text-align: left;
@@ -229,13 +229,11 @@ img {
   contain: paint;
 }
 
-.showcase-slide::before,
-.detail-slide::before {
+.showcase-slide::before {
   display: none;
 }
 
-.showcase-slide.is-active,
-.detail-slide.is-active {
+.showcase-slide.is-active {
   opacity: 1;
   pointer-events: auto;
   z-index: 2;
@@ -244,7 +242,8 @@ img {
 .showcase-slide img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
   backface-visibility: hidden;
   filter: none;
   transform: translateZ(0);
@@ -280,7 +279,7 @@ img {
 
 .carousel-bars {
   display: grid;
-  grid-template-columns: repeat(var(--slide-count, 4), minmax(0, 1fr));
+  grid-template-columns: repeat(var(--slide-count, 5), minmax(0, 1fr));
   align-items: center;
   justify-self: center;
   width: min(360px, 58vw);
@@ -305,35 +304,36 @@ img {
   top: 50%;
   z-index: 6;
   display: grid;
-  width: clamp(44px, 4.2vw, 72px);
-  height: clamp(44px, 4.2vw, 72px);
+  width: clamp(28px, 3.2vw, 48px);
+  height: clamp(28px, 3.2vw, 48px);
   place-items: center;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.36);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.18);
-  color: rgba(255, 255, 255, 0.64);
+  background: rgba(0, 0, 0, 0.16);
+  color: rgba(255, 255, 255, 0.94);
   cursor: pointer;
-  font-size: clamp(22px, 2.5vw, 38px);
-  font-weight: 200;
-  line-height: 1;
-  backdrop-filter: blur(8px);
+  font-family: "MiSans", sans-serif;
+  font-size: clamp(20px, 2.6vw, 48px);
+  font-weight: 100;
+  line-height: 0.82;
+  backdrop-filter: blur(4px);
   transform: translateY(-50%);
-  transition: color 180ms ease, border-color 180ms ease, background 180ms ease, transform 180ms ease;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
 .carousel-arrow[data-carousel-prev] {
-  left: clamp(16px, 2.6vw, 42px);
+  left: clamp(16px, 3vw, 64px);
 }
 
 .carousel-arrow[data-carousel-next] {
-  right: clamp(16px, 2.6vw, 42px);
+  right: clamp(16px, 3vw, 64px);
 }
 
 .carousel-arrow:hover {
-  color: rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.68);
-  background: rgba(0, 0, 0, 0.34);
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(0, 0, 0, 0.24);
+  color: #fff;
   transform: translateY(-50%) scale(1.04);
 }
 
@@ -424,7 +424,7 @@ h2 {
 .case-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(10px, 1.2vw, 18px);
+  gap: 2px;
 }
 
 .case-card {
@@ -446,7 +446,7 @@ h2 {
   min-height: 320px;
   overflow: hidden;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 0;
   background: #080808;
   color: var(--ink);
   text-align: left;
@@ -454,37 +454,34 @@ h2 {
 }
 
 .case-card.is-active button {
-  border-color: var(--gold-strong);
+  box-shadow: inset 0 -2px 0 var(--gold-strong);
 }
 
 .case-card img {
   height: 100%;
   min-height: 320px;
   object-fit: cover;
-  filter: brightness(0.88);
+  filter: brightness(0.92);
   transition: filter 420ms ease, transform 520ms ease;
 }
 
 .case-card button:hover img {
-  filter: brightness(1.08) saturate(1.04);
-  transform: scale(1.025);
+  filter: brightness(0.72) saturate(1.02);
+  transform: scale(1.018);
 }
 
 .case-card button::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.84));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.72));
+  opacity: 0;
+  transition: opacity 320ms ease;
 }
 
-.case-number {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 1;
-  color: var(--gold-strong);
-  font-size: 12px;
-  font-weight: 200;
+.case-card button:hover::after,
+.case-card.is-active button::after {
+  opacity: 1;
 }
 
 .case-copy {
@@ -494,7 +491,10 @@ h2 {
   left: 18px;
   z-index: 1;
   display: grid;
-  gap: 9px;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 280ms ease, transform 280ms ease;
 }
 
 .case-copy small {
@@ -508,6 +508,7 @@ h2 {
   font-size: clamp(19px, 1.7vw, 28px);
   font-weight: 400;
   line-height: 1.08;
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.42);
 }
 
 .case-copy em {
@@ -516,6 +517,13 @@ h2 {
   font-style: normal;
   font-weight: 200;
   line-height: 1.62;
+}
+
+.case-card button:hover .case-copy,
+.case-card button:focus-visible .case-copy,
+.case-card.is-active .case-copy {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .case-detail {
@@ -564,53 +572,22 @@ h2 {
   border-color: var(--gold-strong);
 }
 
-.detail-carousel {
-  position: relative;
-  aspect-ratio: 16 / 10;
+.detail-gallery {
+  display: grid;
+  gap: clamp(14px, 2vw, 28px);
+}
+
+.detail-image {
+  margin: 0;
   overflow: hidden;
   background: #000;
   border: 1px solid var(--soft-line);
 }
 
-.detail-slide {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  margin: 0;
-  opacity: 0;
-  transition: opacity 920ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.detail-slide img {
+.detail-image img {
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.detail-controls {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  z-index: 6;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 8px 10px;
-  background: rgba(0, 0, 0, 0.72);
-  color: var(--gold-strong);
-  font-size: 11px;
-  font-weight: 200;
-}
-
-.detail-controls button {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 200;
+  height: auto;
 }
 
 .section-grid {
@@ -751,16 +728,17 @@ h2 {
   color: rgba(245, 241, 232, 0.26);
   font-size: clamp(12px, 0.95vw, 15px);
   font-weight: 200;
+  line-height: 1.7;
   text-align: center;
 }
 
 .legal-note {
   max-width: 980px;
-  margin: 0 auto -42px;
+  margin: 0 auto;
   color: rgba(245, 241, 232, 0.38);
   font-size: clamp(11px, 0.9vw, 13px);
   font-weight: 200;
-  line-height: 1.8;
+  line-height: 1.9;
   text-align: center;
 }
 
@@ -879,8 +857,27 @@ h2 {
   }
 
   .showcase {
-    height: clamp(260px, 56vw, 420px);
+    height: clamp(600px, 144vw, 960px);
     min-height: 0;
+  }
+
+  .showcase-slide img {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .carousel-arrow {
+    width: clamp(24px, 8vw, 34px);
+    height: clamp(24px, 8vw, 34px);
+    font-size: clamp(10px, 3.6vw, 15px);
+  }
+
+  .carousel-arrow[data-carousel-prev] {
+    left: clamp(10px, 3vw, 18px);
+  }
+
+  .carousel-arrow[data-carousel-next] {
+    right: clamp(10px, 3vw, 18px);
   }
 
   .case-grid,
@@ -910,8 +907,4 @@ h2 {
     left: 14px;
   }
 
-  .detail-controls {
-    right: 10px;
-    bottom: 10px;
-  }
 }

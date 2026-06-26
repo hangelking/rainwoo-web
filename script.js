@@ -603,7 +603,6 @@ const cases = [
     year: "2025",
     count: 7,
     ext: "webp",
-    hidden: true,
     zh: {
       name: "凤羽琥珀",
       type: "产品包装与插画",
@@ -616,16 +615,31 @@ const cases = [
       title: "Feather lightness and amber warmth create an eastern product memory.",
       desc: "Original graphics, layered color and material sheen build a poetic bridge between cultural imagery and product value."
     }
+  }),
+  projectCase({
+    slug: "zhongcha-canglong",
+    year: "2026",
+    count: 5,
+    zh: {
+      name: "中茶藏龙",
+      type: "高端茶礼包装",
+      title: "以藏龙意象与金色礼序，建立中茶高端礼赠气场。",
+      desc: "设计围绕龙纹、金色材质和礼盒结构展开，在传统文化符号与现代高端茶礼之间建立清晰识别，让产品在陈列、开箱与传播中保持统一的东方气质。"
+    },
+    en: {
+      name: "China Tea Canglong",
+      type: "Premium Tea Gift Packaging",
+      title: "A dragon motif and golden ritual language create a premium gifting presence.",
+      desc: "Dragon patterns, gold material cues and gift-box structure build a clear identity between traditional symbolism and contemporary premium tea gifting."
+    }
   })
 ];
 
 let currentLang = "zh";
 let activeCase = null;
 let activeSlide = 0;
-let activeDetailSlide = 0;
 let carouselTimer;
 let carouselStartToken = 0;
-let detailTimer;
 
 function caseImagePath(item, image) {
   return `assets/cases/${item.slug}/${image}`;
@@ -661,24 +675,34 @@ function setLanguage(lang) {
 function featuredCases() {
   return [
     {
+      image: "assets/banners/01.jpg",
+      slug: "zhongcha-tea-bags",
+      zh: { name: "中茶袋泡散茶" },
+      en: { name: "China Tea Bagged Loose Tea" }
+    },
+    {
       image: "assets/banners/02.jpg",
+      slug: "fengyu-hupo",
+      zh: { name: "凤羽琥珀" },
+      en: { name: "Phoenix Feather Amber" }
+    },
+    {
+      image: "assets/banners/03.jpg",
+      slug: "haoke-zhongcha-bingdao-xigui",
       zh: { name: "冰岛昔归" },
       en: { name: "Bingdao Xigui" }
     },
     {
-      image: "assets/banners/03.jpg",
-      zh: { name: "琥珀/凤羽×琥珀" },
-      en: { name: "Amber / Fengyu x Amber" }
-    },
-    {
       image: "assets/banners/04.jpg",
-      zh: { name: "老班章 / 金票 / 七子饼" },
-      en: { name: "Lao Banzhang / Gold Ticket / Qizi Cake" }
+      slug: "yunnan-zhongcha-black-gold-banzhang",
+      zh: { name: "黑金班章" },
+      en: { name: "Black Gold Banzhang" }
     },
     {
       image: "assets/banners/05.jpg",
-      zh: { name: "藏龙 / 宫廷普洱 / 金中茶 / 琥珀" },
-      en: { name: "Canglong / Palace Puer / Gold China Tea / Amber" }
+      slug: "zhongcha-canglong",
+      zh: { name: "中茶藏龙" },
+      en: { name: "China Tea Canglong" }
     }
   ];
 }
@@ -757,9 +781,9 @@ function renderCarousel() {
   carousel.innerHTML = items.map((item, index) => {
     const content = item[currentLang];
     return `
-      <div class="showcase-slide" data-carousel-slide aria-label="${content.name}">
+      <button class="showcase-slide" type="button" data-carousel-slide data-carousel-case="${item.slug}" aria-label="${translations[currentLang].openCase}: ${content.name}">
         <img src="${item.image}" alt="${content.name}" loading="eager" decoding="async" fetchpriority="${index === 0 ? "high" : "low"}" draggable="false" />
-      </div>
+      </button>
     `;
   }).join("");
 
@@ -805,7 +829,6 @@ function renderCases() {
       <article class="case-card ${isActive ? "is-active" : ""}" style="--delay: ${Math.min(index * 45, 360)}ms">
         <button type="button" data-case="${item.slug}" aria-label="${translations[currentLang].openCase}: ${content.name}">
           <img src="${caseImagePath(item, item.images[0])}" alt="${content.name}" loading="${index < 2 ? "eager" : "lazy"}" draggable="false" />
-          <span class="case-number">${String(index + 1).padStart(2, "0")}</span>
           <span class="case-copy">
             <small>${content.type} / ${item.year}</small>
             <strong>${content.name}</strong>
@@ -816,23 +839,6 @@ function renderCases() {
     `;
   }).join("");
   requestAnimationFrame(setupReveal);
-}
-
-function updateDetailState() {
-  const item = visibleCaseBySlug(activeCase);
-  if (!item) return;
-  activeDetailSlide = (activeDetailSlide + item.images.length) % item.images.length;
-
-  caseDetail.querySelectorAll(".detail-slide").forEach((slide, index) => {
-    const isActive = index === activeDetailSlide;
-    slide.classList.toggle("is-active", isActive);
-    slide.setAttribute("aria-hidden", String(!isActive));
-  });
-
-  const count = caseDetail.querySelector("[data-detail-count]");
-  if (count) {
-    count.textContent = `${String(activeDetailSlide + 1).padStart(2, "0")} / ${String(item.images.length).padStart(2, "0")}`;
-  }
 }
 
 function renderCaseDetail() {
@@ -849,7 +855,6 @@ function renderCaseDetail() {
     return;
   }
   const content = item[currentLang];
-  activeDetailSlide = Math.min(activeDetailSlide, item.images.length - 1);
   caseDetail.classList.remove("is-empty");
   caseDetail.innerHTML = `
     <div class="detail-copy">
@@ -858,35 +863,14 @@ function renderCaseDetail() {
       <p>${content.desc}</p>
       <button class="detail-back" type="button" data-close-case>${translations[currentLang].closeCase}</button>
     </div>
-    <div class="detail-carousel" aria-label="${translations[currentLang].galleryLabel}">
+    <div class="detail-gallery" aria-label="${translations[currentLang].galleryLabel}">
       ${item.images.map((image, index) => `
-        <figure class="detail-slide">
+        <figure class="detail-image">
           <img src="${originalImagePath(item, image)}" alt="${content.name} ${index + 1}" loading="${index < 2 ? "eager" : "lazy"}" draggable="false" />
         </figure>
       `).join("")}
-      <div class="detail-controls">
-        <button type="button" data-detail-prev aria-label="Previous image">←</button>
-        <span data-detail-count>${String(activeDetailSlide + 1).padStart(2, "0")} / ${String(item.images.length).padStart(2, "0")}</span>
-        <button type="button" data-detail-next aria-label="Next image">→</button>
-      </div>
     </div>
   `;
-  updateDetailState();
-}
-
-function setDetailSlide(index) {
-  if (!activeCase) return;
-  const item = visibleCaseBySlug(activeCase);
-  if (!item) return;
-  activeDetailSlide = (index + item.images.length) % item.images.length;
-  updateDetailState();
-}
-
-function startDetailCarousel() {
-  clearInterval(detailTimer);
-  const item = visibleCaseBySlug(activeCase);
-  if (!item || item.images.length < 2) return;
-  detailTimer = setInterval(() => setDetailSlide(activeDetailSlide + 1), 4600);
 }
 
 function setupSwipeNavigation(target, onPrevious, onNext, scopeSelector) {
@@ -924,20 +908,29 @@ function setupSwipeNavigation(target, onPrevious, onNext, scopeSelector) {
 function openCase(slug) {
   if (!visibleCaseBySlug(slug)) return;
   activeCase = slug;
-  activeDetailSlide = 0;
   renderCases();
   renderCaseDetail();
-  startDetailCarousel();
   caseDetail.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  if (!history.state?.activeCase || history.state.activeCase !== slug) {
+    history.pushState({ activeCase: slug }, "", `#project-${slug}`);
+  }
 }
 
 function closeCaseDetail() {
   activeCase = null;
-  activeDetailSlide = 0;
-  clearInterval(detailTimer);
   renderCases();
   renderCaseDetail();
   document.querySelector("#works")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function returnToWorks() {
+  if (history.state?.activeCase) {
+    history.back();
+    return;
+  }
+
+  closeCaseDetail();
 }
 
 function setupDetailReturnSwipe() {
@@ -961,7 +954,7 @@ function setupDetailReturnSwipe() {
     const deltaX = event.clientX - startX;
     const deltaY = event.clientY - startY;
     if (Math.abs(deltaX) < minDistance || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
-    closeCaseDetail();
+    returnToWorks();
   });
 
   document.addEventListener("pointercancel", () => {
@@ -1030,6 +1023,16 @@ caseGrid?.addEventListener("click", (event) => {
   openCase(button.dataset.case);
 });
 
+carousel?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-carousel-case]");
+  if (!button) return;
+
+  const active = featuredCases()[activeSlide];
+  if (visibleCaseBySlug(active?.slug)) {
+    openCase(active.slug);
+  }
+});
+
 carouselDots?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-slide]");
   if (!button) return;
@@ -1061,35 +1064,9 @@ setupSwipeNavigation(
 
 caseDetail?.addEventListener("click", (event) => {
   if (event.target.closest("[data-close-case]")) {
-    closeCaseDetail();
-    return;
-  }
-
-  if (event.target.closest("[data-detail-prev]")) {
-    setDetailSlide(activeDetailSlide - 1);
-    startDetailCarousel();
-  }
-
-  if (event.target.closest("[data-detail-next]")) {
-    setDetailSlide(activeDetailSlide + 1);
-    startDetailCarousel();
+    returnToWorks();
   }
 });
-
-setupSwipeNavigation(
-  caseDetail,
-  () => {
-    if (window.matchMedia("(max-width: 720px)").matches) return;
-    setDetailSlide(activeDetailSlide - 1);
-    startDetailCarousel();
-  },
-  () => {
-    if (window.matchMedia("(max-width: 720px)").matches) return;
-    setDetailSlide(activeDetailSlide + 1);
-    startDetailCarousel();
-  },
-  ".detail-carousel"
-);
 
 languageButtons.forEach((button) => {
   button.addEventListener("click", () => setLanguage(button.dataset.langBtn));
@@ -1103,6 +1080,22 @@ document.addEventListener("visibilitychange", () => {
 
   startCarousel();
 });
+
+window.addEventListener("popstate", (event) => {
+  if (event.state?.activeCase) {
+    activeCase = event.state.activeCase;
+    renderCases();
+    renderCaseDetail();
+    caseDetail.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  if (activeCase) {
+    closeCaseDetail();
+  }
+});
+
+history.replaceState({ activeCase: null }, "", window.location.href);
 
 setLanguage(currentLang);
 setupReveal();
