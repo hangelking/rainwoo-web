@@ -635,7 +635,7 @@ const cases = [
   })
 ];
 
-let currentLang = "zh";
+let currentLang = "en";
 let activeCase = null;
 let activeSlide = 0;
 let carouselTimer;
