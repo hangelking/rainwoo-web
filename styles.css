@@ -857,7 +857,7 @@ h2 {
   }
 
   .showcase {
-    height: clamp(320px, 100vw, 560px);
+    height: min(calc(100svh - 78px), 760px);
     max-height: none;
     min-height: 0;
   }
